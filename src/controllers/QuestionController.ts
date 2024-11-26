@@ -31,6 +31,7 @@ interface ScaleParams {
   
     constructor() {
       this.questionBank = this.initializeQuestionBank();
+      this.validateQuestionBank(this.questionBank);
     }
   
     private initializeQuestionBank(): Map<WheelOfLife, Question[]> {
@@ -391,12 +392,26 @@ interface ScaleParams {
       return bank;
     }
 
+    private validateQuestionBank(bank: Map<WheelOfLife, Question[]>): void {
+        Object.values(WheelOfLife).forEach(area => {
+            const questions = bank.get(area);
+            if (!questions || questions.length === 0) {
+                console.warn(`[QuestionController] No questions defined for area: ${area}`);
+            }
+        });
+    }
+
   getQuestionsByImpact(area: WheelOfLife, impactLevel: ImpactLevel): Question[] {
     if (!area || !impactLevel) {
+        console.warn('[QuestionController] Missing area or impact level');
         return [];
     }
     
-    const areaQuestions = this.questionBank.get(area) || [];
+    const areaQuestions = this.questionBank.get(area);
+    if (!areaQuestions) {
+        console.warn(`[QuestionController] No questions found for area: ${area}`);
+        return [];
+    }   
     
     switch (impactLevel) {
       case ImpactLevel.CRITICAL:
@@ -408,51 +423,49 @@ interface ScaleParams {
         return areaQuestions.filter(q => q.required).slice(0, 2);
       case ImpactLevel.NONE:
       default:
+        console.warn(`[QuestionController] Invalid impact level: ${impactLevel}`);
         return [];
     }
   }
 
   // src/controllers/QuestionController.ts
   generateQuestionSequence(
-    primaryArea: WheelOfLife,
-    secondaryAreas: WheelOfLife[],
+    impactedAreas: WheelOfLife[],
     impactLevels: Record<WheelOfLife, ImpactLevel>
   ): Question[] {
-    if (!primaryArea || !impactLevels) {
+    if (!impactedAreas || impactedAreas.length === 0 || !impactLevels) {
+        console.warn('[QuestionController] Missing impacted areas or impact levels');
       return [];
     }
 
-    // Ensure impactLevels has a value for primaryArea
-    if (!impactLevels[primaryArea]) {
-      impactLevels[primaryArea] = ImpactLevel.HIGH; // Set default if missing
-    }
+    try {
+        let questions: Question[] = [];
 
-    let questions: Question[] = [];
+        // Generate questions for each impacted area
+        impactedAreas.forEach((area) => {
+            if (!impactLevels[area]) {
+                console.warn(`[QuestionController] Missing impact level for ${area}, defaulting to HIGH`);
+                impactLevels[area] = ImpactLevel.HIGH;
+            }
 
-    // Add primary area questions
-    questions = questions.concat(
-      this.getQuestionsByImpact(primaryArea, impactLevels[primaryArea])
-    );
+            const areaQuestions = this.getQuestionsByImpact(
+                area, 
+                impactLevels[area]
+            );
+            questions = questions.concat(areaQuestions);
+        });
 
-    // Add secondary area questions
-    if (secondaryAreas && Array.isArray(secondaryAreas)) {
-      secondaryAreas.forEach(area => {
-        // Ensure each secondary area has an impact level
-        if (!impactLevels[area]) {
-          impactLevels[area] = ImpactLevel.MEDIUM; // Set default if missing
-        }
-        const areaQuestions = this.getQuestionsByImpact(
-          area,
-          impactLevels[area]
-        );
-        questions = questions.concat(areaQuestions);
-      });
-    }
-
-    return this.optimizeQuestionOrder(questions);
-  }
+        return this.optimizeQuestionOrder(questions);
+    } catch (error) {
+        console.error('[QuestionController] Error generating question sequence:', error);
+        return [];
+    }}
 
   private optimizeQuestionOrder(questions: Question[]): Question[] {
+    if (!questions || questions.length === 0) {
+        return [];
+    }
+
     const typeOrder: Record<string, number> = { 
         scale: 0, 
         multiselect: 1, 
@@ -466,10 +479,11 @@ interface ScaleParams {
         if (!a.required && b.required) return 1;
 
         // Then sort by question type
-        return (typeOrder[a.type] ?? 4) - (typeOrder[b.type] ?? 4);
+        const aTypeOrder = typeOrder[a.type] ?? 4;
+        const bTypeOrder = typeOrder[b.type] ?? 4;
+        return aTypeOrder - bTypeOrder;
     });
+    
+    }
 
-    
-    
-  }
 }

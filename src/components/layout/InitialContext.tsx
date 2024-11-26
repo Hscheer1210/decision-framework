@@ -14,51 +14,50 @@ export const InitialContext: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<InitialContextForm>();
   const { setContext, nextStep } = useDecisionStore();
 
-  const onSubmit = (formData: InitialContextForm) => {
-    console.log('[InitialContext] Raw form data:', formData);
+  // Create an array of all WheelOfLife values
+  const wheelOfLifeAreas = [
+    WheelOfLife.CAREER,
+    WheelOfLife.FINANCE,
+    WheelOfLife.HEALTH,
+    WheelOfLife.RELATIONSHIPS,
+    WheelOfLife.PERSONAL_GROWTH,
+    WheelOfLife.RECREATION,
+    WheelOfLife.ENVIRONMENT,
+    WheelOfLife.SPIRITUALITY
+  ];
 
-    if (formData.selectedAreas.length === 0) {
+  const onSubmit = (data: InitialContextForm) => {
+    console.log('[InitialContext] Raw form data:', data);
+
+    if (data.selectedAreas.length === 0) {
       console.error('[InitialContext] No areas selected');
       return;
     }
 
-    // First selected area becomes primary, rest are secondary
-    const primaryArea = formData.selectedAreas[0];
-    const secondaryAreas = formData.selectedAreas.slice(1);
+    // Set impact levels - all selected areas get HIGH impact
+    const impactLevels = wheelOfLifeAreas.reduce<Record<WheelOfLife, ImpactLevel>>(
+        (acc, area) => ({
+            ...acc,
+            [area]: ImpactLevel.NONE,
+         }),
+         {} as Record<WheelOfLife, ImpactLevel>
+    );
 
-    // Initialize impactLevels with NONE for all areas
-    const baseImpactLevels: Record<WheelOfLife, ImpactLevel> = {
-        [WheelOfLife.CAREER]: ImpactLevel.NONE,
-        [WheelOfLife.FINANCE]: ImpactLevel.NONE,
-        [WheelOfLife.HEALTH]: ImpactLevel.NONE,
-        [WheelOfLife.RELATIONSHIPS]: ImpactLevel.NONE,
-        [WheelOfLife.PERSONAL_GROWTH]: ImpactLevel.NONE,
-        [WheelOfLife.RECREATION]: ImpactLevel.NONE,
-        [WheelOfLife.ENVIRONMENT]: ImpactLevel.NONE,
-        [WheelOfLife.SPIRITUALITY]: ImpactLevel.NONE
-      };
-
-      // Update impact levels based on selection
-    const impactLevels: Record<WheelOfLife, ImpactLevel> = {
-        ...baseImpactLevels,
-        [primaryArea]: ImpactLevel.HIGH,
-        ...secondaryAreas.reduce((acc, area) => ({
-          ...acc,
-          [area]: ImpactLevel.MEDIUM
-        }), {} as Record<WheelOfLife, ImpactLevel>)
-      };
+    // Update impact levels for selected areas
+    data.selectedAreas.forEach((area) => {
+        impactLevels[area] = ImpactLevel.HIGH;
+    });
   
-      const contextData: DecisionContext = {
-        description: formData.description,
-        primaryArea,
-        secondaryAreas,
+    const contextData: DecisionContext = {
+        description: data.description,
+        impactedAreas: data.selectedAreas,
         impactLevels
-      };
-  
-      console.log('[InitialContext] Processed context data:', contextData);
-      setContext(contextData);
-      nextStep();
     };
+  
+    console.log('[InitialContext] Processed context data:', contextData);
+    setContext(contextData);
+    nextStep();
+};
 
   return (
     <div className="bg-white rounded-lg shadow p-6">

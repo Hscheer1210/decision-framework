@@ -81,11 +81,19 @@ export const Results: React.FC = () => {
       <div className="mb-8">
         <h3 className="text-xl font-semibold mb-4">Decision Context</h3>
         <div className="bg-gray-50 p-4 rounded-md">
-          <p className="font-medium">Primary Impact Area:</p>
-          <p className="mb-2">{context?.primaryArea.replace('_', ' ')}</p>
-          
           <p className="font-medium">Decision Description:</p>
-          <p>{context?.description}</p>
+          <p className="mb-4">{context?.description}</p>
+          
+          {/* Add Impacted Areas section */}
+            <p className="font-medium">Impacted Areas:</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                {context?.impactedAreas.map(area => (
+                    <div key={area} className="flex items-center space-x-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span>{area.replace(/_/g, ' ')}</span>
+                    </div>
+                ))}
+            </div>
         </div>
       </div>
 

@@ -12,8 +12,8 @@ export class DecisionFramework {
   }
 
   private validateContext(): void {
-    if (!this.context?.primaryArea) {
-      throw new Error('Primary impact area must be specified');
+    if (!this.context?.impactedAreas) {
+      throw new Error('Impact areas must be specified');
     }
   }
 

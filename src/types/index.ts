@@ -33,8 +33,7 @@ export type ResponseRecord = Record<string, QuestionResponse>;
 // Updated interfaces with more specific types and documentation
 export interface DecisionContext {
     description: string;
-    primaryArea: WheelOfLife;
-    secondaryAreas: WheelOfLife[];
+    impactedAreas: WheelOfLife[];
     impactLevels: Record<WheelOfLife, ImpactLevel>;
     createdAt?: Date; // Optional: might be useful for tracking
 }
