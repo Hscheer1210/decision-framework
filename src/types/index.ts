@@ -3,14 +3,14 @@
  * Represents the different life areas in the Wheel of Life framework
  */
 export enum WheelOfLife {
-    CAREER = 'Career_',
+    CAREER = 'Career',
     FINANCE = 'Finance',
     HEALTH = 'Health_&_Wellness',
     RELATIONSHIPS = 'Relationships',
     PERSONAL_GROWTH = 'Personal_Growth',
-    RECREATION = 'Recreation',
+    LIFESTYLE = 'Lifestyle',
     ENVIRONMENT = 'Physical_Environment',
-    SPIRITUALITY = 'Spirituality_&_Purpose'
+    CORE_VALUES = 'Core_Values'
 }
 
 /**
@@ -112,8 +112,8 @@ export const isValidWheelArea = (area: string): area is WheelOfLife => {
 export const isCompleteDecisionContext = (context: Partial<DecisionContext>): context is DecisionContext => {
     return !!(
         context.description &&
-        context.primaryArea &&
-        Array.isArray(context.secondaryAreas) &&
+        Array.isArray(context.impactedAreas) &&
+        context.impactedAreas.length > 0 &&
         context.impactLevels &&
         Object.keys(context.impactLevels).length > 0
     );

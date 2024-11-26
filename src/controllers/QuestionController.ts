@@ -257,10 +257,10 @@ interface ScaleParams {
         }
       ]);
   
-      // RECREATION Questions
-      bank.set(WheelOfLife.RECREATION, [
+      // LIFESTYLE Questions
+      bank.set(WheelOfLife.LIFESTYLE, [
         {
-          id: 'recreation-time',
+          id: 'lifestyle-time',
           text: 'Leisure Time Impact',
           description: 'How will this affect your leisure time?',
           type: 'scale',
@@ -277,12 +277,12 @@ interface ScaleParams {
             ]
           },
           required: true,
-          category: WheelOfLife.RECREATION
+          category: WheelOfLife.LIFESTYLE
         },
         {
-          id: 'recreation-quality',
-          text: 'Recreation Quality',
-          description: 'How will this affect the quality of your recreational activities?',
+          id: 'lifestyle-quality',
+          text: 'Lifestyle Quality',
+          description: 'How will this affect the quality of your lifestyle?',
           type: 'scale',
           scaleParams: {
             min: 0,
@@ -297,7 +297,7 @@ interface ScaleParams {
             ]
           },
           required: true,
-          category: WheelOfLife.RECREATION
+          category: WheelOfLife.LIFESTYLE
         }
       ]);
   
@@ -346,11 +346,11 @@ interface ScaleParams {
       ]);
   
       // SPIRITUALITY Questions
-      bank.set(WheelOfLife.SPIRITUALITY, [
+      bank.set(WheelOfLife.CORE_VALUES, [
         {
-          id: 'spirituality-alignment',
+          id: 'values-alignment',
           text: 'Values Alignment',
-          description: 'How well does this align with your values and beliefs?',
+          description: 'How well does this align with your core values and beliefs?',
           type: 'scale',
           scaleParams: {
             min: 0,
@@ -365,10 +365,10 @@ interface ScaleParams {
             ]
           },
           required: true,
-          category: WheelOfLife.SPIRITUALITY
+          category: WheelOfLife.CORE_VALUES
         },
         {
-          id: 'spirituality-purpose',
+          id: 'values-purpose',
           text: 'Sense of Purpose',
           description: 'How will this impact your sense of purpose and meaning?',
           type: 'scale',
@@ -385,7 +385,7 @@ interface ScaleParams {
             ]
           },
           required: true,
-          category: WheelOfLife.SPIRITUALITY
+          category: WheelOfLife.CORE_VALUES
         }
       ]);
   

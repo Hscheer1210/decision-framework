@@ -21,9 +21,9 @@ export const InitialContext: React.FC = () => {
     WheelOfLife.HEALTH,
     WheelOfLife.RELATIONSHIPS,
     WheelOfLife.PERSONAL_GROWTH,
-    WheelOfLife.RECREATION,
+    WheelOfLife.LIFESTYLE,
     WheelOfLife.ENVIRONMENT,
-    WheelOfLife.SPIRITUALITY
+    WheelOfLife.CORE_VALUES
   ];
 
   const onSubmit = (data: InitialContextForm) => {
