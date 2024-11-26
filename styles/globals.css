@@ -1,0 +1,73 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+
+/* Custom slider styling */
+input[type="range"] {
+  width: 100%;
+  height: 8px;
+  background-color: rgb(229, 231, 235);
+  border-radius: 0.5rem;
+  appearance: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  background-color: rgb(37, 99, 235);
+  border-radius: 9999px;
+  appearance: none;
+  cursor: pointer;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background-color: rgb(37, 99, 235);
+  border-radius: 9999px;
+  cursor: pointer;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px rgb(96, 165, 250);
+}
+
+/* Custom styles for the scale markers */
+.scale-marker {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: rgb(107, 114, 128);
+  text-align: center;
+}
+
+/* Custom styles for the scale container */
+.scale-container {
+  position: relative;
+  padding: 1rem 0;
+}
+
+/* Custom styles for the scale labels */
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: rgb(107, 114, 128);
+}
+
+/* Custom styles for the current value */
+.scale-value {
+  text-align: right;
+  font-size: 0.875rem;
+  color: rgb(107, 114, 128);
+  margin-top: 0.5rem;
+}
