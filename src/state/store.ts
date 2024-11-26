@@ -6,13 +6,16 @@ import {
   ObjectiveMetrics, 
   SubjectiveMetrics, 
   AnalysisResults,
-  WheelOfLife 
+  WheelOfLife, 
+  UserPriorities
 } from '../types';
 
 interface DecisionState {
   // State
   currentState: Record<WheelOfLife, number> | null;
   context: DecisionContext | null;
+  priorities: UserPriorities | null;
+  coreValues: string[];
   objectiveMetrics: ObjectiveMetrics | null;
   subjectiveMetrics: SubjectiveMetrics | null;
   analysisResults: AnalysisResults | null;
@@ -23,6 +26,8 @@ interface DecisionState {
   // Actions
   setCurrentState: (satisfaction: Record<WheelOfLife, number>) => void;
   setContext: (context: DecisionContext) => void;
+  setAreaPriorities: (priorities: UserPriorities) => void;
+  setCoreValues: (values: string[]) => void;
   setObjectiveMetrics: (metrics: ObjectiveMetrics) => void;
   setSubjectiveMetrics: (metrics: SubjectiveMetrics) => void;
   setAnalysisResults: (results: AnalysisResults) => void;
@@ -63,6 +68,22 @@ export const useDecisionStore = create<DecisionState>()(
       ...initialState,
 
       // Actions
+      priorities: null,
+      coreValues: [],
+
+      setAreaPriorities: (priorities) => {
+          set((state) => ({ 
+              priorities,
+              errors: state.errors.filter(e => !e.includes('priorities'))
+          }))
+      },
+  
+        setCoreValues: (values) =>
+          set((state) => ({
+            coreValues: values,
+            errors: state.errors.filter(e => !e.includes('values'))
+          })),
+
       setCurrentState: (satisfaction) => 
         set({ currentState: satisfaction }),
       setContext: (context: DecisionContext) => {
