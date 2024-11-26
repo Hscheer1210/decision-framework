@@ -5,7 +5,7 @@
 export enum WheelOfLife {
     CAREER = 'Career',
     FINANCE = 'Finance',
-    HEALTH = 'Health_&_Wellness',
+    HEALTH = 'Health',
     RELATIONSHIPS = 'Relationships',
     PERSONAL_GROWTH = 'Personal_Growth',
     LIFESTYLE = 'Lifestyle',
@@ -34,8 +34,8 @@ export type ResponseRecord = Record<string, QuestionResponse>;
 export interface DecisionContext {
     description: string;
     impactedAreas: WheelOfLife[];
-    impactLevels: Record<WheelOfLife, ImpactLevel>;
-    createdAt?: Date; // Optional: might be useful for tracking
+    impactLevels: { [key in WheelOfLife]: ImpactLevel };
+    createdAt?: Date; 
 }
 
 export interface FinancialMetrics {

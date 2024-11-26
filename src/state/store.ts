@@ -11,6 +11,7 @@ import {
 
 interface DecisionState {
   // State
+  currentState: Record<WheelOfLife, number> | null;
   context: DecisionContext | null;
   objectiveMetrics: ObjectiveMetrics | null;
   subjectiveMetrics: SubjectiveMetrics | null;
@@ -20,6 +21,7 @@ interface DecisionState {
   errors: string[];
 
   // Actions
+  setCurrentState: (satisfaction: Record<WheelOfLife, number>) => void;
   setContext: (context: DecisionContext) => void;
   setObjectiveMetrics: (metrics: ObjectiveMetrics) => void;
   setSubjectiveMetrics: (metrics: SubjectiveMetrics) => void;
@@ -39,7 +41,8 @@ const initialState = {
   analysisResults: null,
   currentStep: 0,
   isProcessing: false,
-  errors: []
+  errors: [],
+  currentState: null,
 };
 
 // Debug helper
@@ -54,12 +57,14 @@ const logStateChange = (action: string, prevState: any, nextState: any) => {
 };
 
 export const useDecisionStore = create<DecisionState>()(
-  devtools(
-    (set, get) => ({
+    devtools(
+        (set, get) => ({
       // Initial state
       ...initialState,
 
       // Actions
+      setCurrentState: (satisfaction) => 
+        set({ currentState: satisfaction }),
       setContext: (context: DecisionContext) => {
         console.log('[Store] Setting context:', context);
         set((state) => {
@@ -168,8 +173,8 @@ export const useDecisionStore = create<DecisionState>()(
       name: 'decision-framework-store',
       enabled: process.env.NODE_ENV === 'development'
     }
-  )
-);
+));
+
 
 // Selectors with logging
 export const selectContext = (state: DecisionState) => {
