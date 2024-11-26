@@ -12,42 +12,53 @@ import { SubjectiveAssessment } from './SubjectiveAssessment';
 import { Results } from './Results';
 
 export const DecisionFramework: React.FC = () => {
-  const { currentStep } = useDecisionStore();
+  const { currentStep, context, priorities, coreValues } = useDecisionStore();
 
-  const steps = [
-    // Baseline Information
-    'Decision Context',
-    'Priorities',
-    'Core Values',
-    'Current State',
-    'Life Balance',
+  // Helper function to check if user can proceed to satisfaction rankings
+  const canAccessSatisfactionRankings = () => {
+    return context && priorities && coreValues.length > 0;
+  };
 
-    // Analysis
-    'Objective Metrics',
-    'Subjective Assessment',
-    'Results'
-  ];
+  // Render appropriate component based on step and completion status
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 0:
+        return <DecisionContext />;
+      case 1:
+        return context ? <AreaPrioritization /> : <DecisionContext />;
+      case 2:
+        return priorities ? <CoreValuesAssessment /> : <AreaPrioritization />;
+      case 3:
+        return canAccessSatisfactionRankings() ? <CurrentStateEvaluation /> : <CoreValuesAssessment />;
+      case 4:
+        return canAccessSatisfactionRankings() ? <CurrentStateVisualization /> : <CoreValuesAssessment />;
+      case 5:
+        return <ObjectiveMetricsForm />;
+      case 6:
+        return <SubjectiveAssessment />;
+      case 7:
+        return <Results />;
+      default:
+        return <DecisionContext />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <ProgressBar 
-            steps={steps}
-            currentStep={currentStep} 
-        />
+            steps={[
+                'Decision Context',
+                'Priorities',
+                'Core Values',
+                'Current State',
+                'Life Balance',
+                'Objective Metrics',
+                'Subjective Assessment',
+                'Results'
+            ]} currentStep={currentStep} />
 
-        {/* Baseline Information */}
-        {currentStep === 0 && <DecisionContext />}
-        {currentStep === 1 && <AreaPrioritization />}
-        {currentStep === 2 && <CoreValuesAssessment />}
-        {currentStep === 0 && <CurrentStateEvaluation />}
-        {currentStep === 1 && <CurrentStateVisualization />}
-
-
-        {/* Analysis */}
-        {currentStep === 4 && <ObjectiveMetricsForm />}
-        {currentStep === 5 && <SubjectiveAssessment />}
-        {currentStep === 6 && <Results />}
+            {renderCurrentStep()}
       </div>
     </div>
   );
