@@ -12,6 +12,7 @@ export const SubjectiveAssessment: React.FC = () => {
     context, 
     priorities,
     coreValues,
+    currentState,
     objectiveMetrics,
     setSubjectiveMetrics, 
     setAnalysisResults, 
@@ -52,7 +53,7 @@ export const SubjectiveAssessment: React.FC = () => {
     console.log('[SubjectiveAssessment] Form submitted with data:', data);
 
     try {
-      if (!context || !objectiveMetrics) {
+      if (!context || !objectiveMetrics || !currentState) {
         const error = 'Missing required data for analysis';
         console.error('[SubjectiveAssessment] Error:', error);
         addError(error);
@@ -76,13 +77,19 @@ export const SubjectiveAssessment: React.FC = () => {
             responses: timestampedResponses
         };
 
-      setSubjectiveMetrics(data);
+        // Combine current state with responses
+      const subjectiveData: SubjectiveMetrics = {
+        currentState: currentState,
+        responses: data.responses
+      };
+
+      setSubjectiveMetrics(subjectiveData);
       console.log('[SubjectiveAssessment] Subjective metrics set');
 
       const results = analysisService.generateAnalysis(
         context,
         objectiveMetrics,
-        formattedData
+        subjectiveData
       );
       
       setAnalysisResults(results);
@@ -94,7 +101,7 @@ export const SubjectiveAssessment: React.FC = () => {
   };
 
   // Add validation for required context
-  if (!context || !objectiveMetrics) {
+  if (!context || !objectiveMetrics || !currentState) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <p className="text-red-600">
@@ -112,42 +119,13 @@ export const SubjectiveAssessment: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-6">Subjective Assessment</h2>
+      <h2 className="text-2xl font-bold mb-6">Impact Assessment</h2>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        {/* Current State Assessment */}
-        <section className="space-y-6">
-          <h3 className="text-xl font-semibold">Current State</h3>
-          
-          {Object.values(WheelOfLife).map((area) => (
-            <div key={area} className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                {area.replace(/_/g, ' ')} Satisfaction (0-10)
-              </label>
-              <input
-                type="number"
-                min="0"
-                max="10"
-                step="0.5"
-                {...register(`currentState.${area}`, {
-                  required: 'Required',
-                  min: 0,
-                  max: 10
-                })}
-                className="w-full px-3 py-2 border rounded-md"
-              />
-              {errors.currentState?.[area] && (
-                <p className="text-sm text-red-600">
-                  {errors.currentState[area].message}
-                </p>
-              )}
-            </div>
-          ))}
-        </section>
 
         {/* Dynamic Questions */}
         <section className="space-y-6">
-          <h3 className="text-xl font-semibold">Impact Assessment</h3>
+          <h3 className="text-xl font-semibold">Questionnaire</h3>
           
           {questions.map((question) => (
             <div key={question.id} className="space-y-3 p-4 bg-gray-50 rounded-lg">
