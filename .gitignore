@@ -1,5 +1,5 @@
 node_modules/
 .next/
-/.DS_Store
-/.vscode/
+.DS_Store
+.vscode/
 /src/__tests__/
