@@ -1,489 +1,170 @@
 // src/controllers/QuestionController.ts
-import { WheelOfLife, ImpactLevel } from '../types';
+import {
+    Question,
+    WheelOfLife,
+    TimeFrame,
+    PriorityLevel,
+    QuestionType,
+} from '../types';
 
-// src/controllers/QuestionController.ts
-interface ScaleParams {
-    min: number;
-    max: number;
-    minLabel: string;
-    maxLabel: string;
-    midLabel: string;
-    markers: Array<{
-      value: number;
-      label: string;
-    }>;
-  }
-  
-  interface Question {
-    id: string;
-    text: string;
-    description: string;
-    type: 'text' | 'number' | 'scale' | 'multiselect';
-    scaleParams?: ScaleParams;
-    options?: string[];
-    required: boolean;
-    category: WheelOfLife;
-    subCategory?: string;
-  }
-  
-  export class QuestionController {
+// Import all question banks
+import { careerQuestions } from '../data/questions/careerQuestions';
+import { financeQuestions } from '../data/questions/financeQuestions';
+import { healthQuestions } from '../data/questions/healthQuestions';
+import { relationshipQuestions } from '../data/questions/relationshipQuestions';
+import { personalGrowthQuestions } from '../data/questions/personalGrowthQuestions';
+import { lifestyleQuestions } from '../data/questions/lifestyleQuestions';
+import { environmentQuestions } from '../data/questions/environmentQuestions';
+import { coreValuesQuestions } from '../data/questions/coreValuesQuestions';
+
+export class QuestionController {
     private questionBank: Map<WheelOfLife, Question[]>;
-  
+
     constructor() {
-      this.questionBank = this.initializeQuestionBank();
-      this.validateQuestionBank(this.questionBank);
-    }
-  
-    private initializeQuestionBank(): Map<WheelOfLife, Question[]> {
-      const bank = new Map<WheelOfLife, Question[]>();
-  
-      // CAREER Questions
-      bank.set(WheelOfLife.CAREER, [
-        {
-          id: 'career-growth',
-          text: 'Professional Growth Impact',
-          description: 'How will this decision affect your professional growth opportunities?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Limits Growth',
-            maxLabel: 'Accelerates Growth',
-            midLabel: 'Maintains Current Growth',
-            markers: [
-              { value: 0, label: 'Significantly Hinders Growth' },
-              { value: 5, label: 'Maintains Status Quo' },
-              { value: 10, label: 'Exceptional Growth Opportunity' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.CAREER
-        },
-        {
-          id: 'career-advancement',
-          text: 'Career Advancement',
-          description: 'How will this impact your career advancement prospects?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Limits Advancement',
-            maxLabel: 'Enhances Advancement',
-            midLabel: 'Neutral Impact',
-            markers: [
-              { value: 0, label: 'May Set Back Career' },
-              { value: 5, label: 'Maintains Current Path' },
-              { value: 10, label: 'Opens New Opportunities' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.CAREER
-        }
-      ]);
-  
-      // FINANCE Questions
-      bank.set(WheelOfLife.FINANCE, [
-        {
-          id: 'finance-security',
-          text: 'Financial Security Impact',
-          description: 'How will this affect your financial security?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Reduces Security',
-            maxLabel: 'Enhances Security',
-            midLabel: 'Maintains Security',
-            markers: [
-              { value: 0, label: 'High Financial Risk' },
-              { value: 5, label: 'No Change to Security' },
-              { value: 10, label: 'Significantly More Secure' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.FINANCE
-        },
-        {
-          id: 'finance-resources',
-          text: 'Resource Requirements',
-          description: 'What level of financial resources will this require?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Minimal Resources',
-            maxLabel: 'Substantial Resources',
-            midLabel: 'Moderate Resources',
-            markers: [
-              { value: 0, label: 'Minimal Investment' },
-              { value: 5, label: 'Moderate Investment' },
-              { value: 10, label: 'Major Investment' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.FINANCE
-        }
-      ]);
-  
-      // HEALTH Questions
-      bank.set(WheelOfLife.HEALTH, [
-        {
-          id: 'health-stress',
-          text: 'Stress Impact',
-          description: 'How will this affect your stress levels?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Reduces Stress',
-            maxLabel: 'Increases Stress',
-            midLabel: 'Neutral Impact',
-            markers: [
-              { value: 0, label: 'Stress Relief' },
-              { value: 5, label: 'No Change' },
-              { value: 10, label: 'High Stress' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.HEALTH
-        },
-        {
-          id: 'health-balance',
-          text: 'Work-Life Balance',
-          description: 'How will this affect your work-life balance?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Reduces Balance',
-            maxLabel: 'Improves Balance',
-            midLabel: 'Maintains Balance',
-            markers: [
-              { value: 0, label: 'Significant Imbalance' },
-              { value: 5, label: 'No Change' },
-              { value: 10, label: 'Much Better Balance' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.HEALTH
-        }
-      ]);
-  
-      // RELATIONSHIPS Questions
-      bank.set(WheelOfLife.RELATIONSHIPS, [
-        {
-          id: 'relationships-time',
-          text: 'Time for Relationships',
-          description: 'How will this affect time available for key relationships?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Reduces Time',
-            maxLabel: 'Increases Time',
-            midLabel: 'No Change',
-            markers: [
-              { value: 0, label: 'Significantly Less Time' },
-              { value: 5, label: 'Same Time Available' },
-              { value: 10, label: 'Much More Time' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.RELATIONSHIPS
-        },
-        {
-          id: 'relationships-quality',
-          text: 'Relationship Quality',
-          description: 'How will this impact the quality of your relationships?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'May Strain Relations',
-            maxLabel: 'Strengthens Relations',
-            midLabel: 'Neutral Impact',
-            markers: [
-              { value: 0, label: 'Could Harm Relations' },
-              { value: 5, label: 'No Impact' },
-              { value: 10, label: 'Enriches Relations' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.RELATIONSHIPS
-        }
-      ]);
-  
-      // PERSONAL_GROWTH Questions
-      bank.set(WheelOfLife.PERSONAL_GROWTH, [
-        {
-          id: 'growth-learning',
-          text: 'Learning Opportunities',
-          description: 'What level of personal growth opportunities does this present?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Limited Learning',
-            maxLabel: 'Extensive Learning',
-            midLabel: 'Moderate Learning',
-            markers: [
-              { value: 0, label: 'Minimal Growth' },
-              { value: 5, label: 'Some Growth' },
-              { value: 10, label: 'Significant Growth' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.PERSONAL_GROWTH
-        },
-        {
-          id: 'growth-fulfillment',
-          text: 'Personal Fulfillment',
-          description: 'How fulfilling would this be for your personal development?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Not Fulfilling',
-            maxLabel: 'Highly Fulfilling',
-            midLabel: 'Moderately Fulfilling',
-            markers: [
-              { value: 0, label: 'Unfulfilling' },
-              { value: 5, label: 'Somewhat Fulfilling' },
-              { value: 10, label: 'Deeply Fulfilling' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.PERSONAL_GROWTH
-        }
-      ]);
-  
-      // LIFESTYLE Questions
-      bank.set(WheelOfLife.LIFESTYLE, [
-        {
-          id: 'lifestyle-time',
-          text: 'Leisure Time Impact',
-          description: 'How will this affect your leisure time?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Reduces Leisure Time',
-            maxLabel: 'Increases Leisure Time',
-            midLabel: 'No Change',
-            markers: [
-              { value: 0, label: 'Much Less Free Time' },
-              { value: 5, label: 'Same Amount of Time' },
-              { value: 10, label: 'Much More Free Time' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.LIFESTYLE
-        },
-        {
-          id: 'lifestyle-quality',
-          text: 'Lifestyle Quality',
-          description: 'How will this affect the quality of your lifestyle?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Lower Quality',
-            maxLabel: 'Higher Quality',
-            midLabel: 'Same Quality',
-            markers: [
-              { value: 0, label: 'Diminished Quality' },
-              { value: 5, label: 'No Change' },
-              { value: 10, label: 'Enhanced Quality' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.LIFESTYLE
-        }
-      ]);
-  
-      // ENVIRONMENT Questions
-      bank.set(WheelOfLife.ENVIRONMENT, [
-        {
-          id: 'environment-living',
-          text: 'Living Environment',
-          description: 'How will this impact your living environment?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Negatively Impacts',
-            maxLabel: 'Positively Impacts',
-            midLabel: 'No Change',
-            markers: [
-              { value: 0, label: 'Worse Environment' },
-              { value: 5, label: 'No Change' },
-              { value: 10, label: 'Better Environment' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.ENVIRONMENT
-        },
-        {
-          id: 'environment-stability',
-          text: 'Environmental Stability',
-          description: 'How will this affect the stability of your environment?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Less Stable',
-            maxLabel: 'More Stable',
-            midLabel: 'No Change',
-            markers: [
-              { value: 0, label: 'Much Less Stable' },
-              { value: 5, label: 'Same Stability' },
-              { value: 10, label: 'Much More Stable' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.ENVIRONMENT
-        }
-      ]);
-  
-      // SPIRITUALITY Questions
-      bank.set(WheelOfLife.CORE_VALUES, [
-        {
-          id: 'values-alignment',
-          text: 'Values Alignment',
-          description: 'How well does this align with your core values and beliefs?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Conflicts with Values',
-            maxLabel: 'Strongly Aligns',
-            midLabel: 'Neutral Alignment',
-            markers: [
-              { value: 0, label: 'Strong Conflict' },
-              { value: 5, label: 'Neutral' },
-              { value: 10, label: 'Perfect Alignment' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.CORE_VALUES
-        },
-        {
-          id: 'values-purpose',
-          text: 'Sense of Purpose',
-          description: 'How will this impact your sense of purpose and meaning?',
-          type: 'scale',
-          scaleParams: {
-            min: 0,
-            max: 10,
-            minLabel: 'Diminishes Purpose',
-            maxLabel: 'Enhances Purpose',
-            midLabel: 'Neutral Impact',
-            markers: [
-              { value: 0, label: 'Less Purposeful' },
-              { value: 5, label: 'No Change' },
-              { value: 10, label: 'More Purposeful' }
-            ]
-          },
-          required: true,
-          category: WheelOfLife.CORE_VALUES
-        }
-      ]);
-  
-      return bank;
+        this.questionBank = new Map([
+            [WheelOfLife.CAREER, careerQuestions],
+            [WheelOfLife.FINANCE, financeQuestions],
+            [WheelOfLife.HEALTH, healthQuestions],
+            [WheelOfLife.RELATIONSHIPS, relationshipQuestions],
+            [WheelOfLife.PERSONAL_GROWTH, personalGrowthQuestions],
+            [WheelOfLife.LIFESTYLE, lifestyleQuestions],
+            [WheelOfLife.ENVIRONMENT, environmentQuestions],
+            [WheelOfLife.CORE_VALUES, coreValuesQuestions]
+        ]);
+
+        this.validateQuestionBank();
     }
 
-    private validateQuestionBank(bank: Map<WheelOfLife, Question[]>): void {
+    private validateQuestionBank(): void {
         Object.values(WheelOfLife).forEach(area => {
-            const questions = bank.get(area);
-            if (!questions || questions.length === 0) {
-                console.warn(`[QuestionController] No questions defined for area: ${area}`);
-            }
+          const questions = this.questionBank.get(area);
+          if (!questions || questions.length === 0) {
+            console.warn(`[QuestionController] No questions defined for area: ${area}`);
+          }
         });
     }
 
-  getQuestionsByImpact(area: WheelOfLife, impactLevel: ImpactLevel): Question[] {
-    if (!area || !impactLevel) {
-        console.warn('[QuestionController] Missing area or impact level');
-        return [];
+    generateQuestionSequence(
+        timeframe: TimeFrame,
+        priorities: WheelOfLife[],
+        coreValues: string[],
+    ): Question[] {
+        try {
+            let questions: Question[] = [];
+
+            // Get questions for each priority area
+            priorities.forEach((area, index) => {
+                const areaQuestions = this.getQuestionsForArea(
+                    area,
+                    timeframe,
+                    index === 0 ? PriorityLevel.HIGH : PriorityLevel.MEDIUM,
+                    coreValues
+                );
+                questions = questions.concat(areaQuestions);
+            });
+
+            // Get baseline questions for other impacted areas
+            Object.values(WheelOfLife)
+                .filter(area => !priorities.includes(area))
+                .forEach(area => {
+                    const baselineQuestions = this.getQuestionsForArea(
+                        area,
+                        timeframe,
+                        PriorityLevel.LOW,
+                        coreValues
+                    );
+                    questions = questions.concat(baselineQuestions);
+                });
+
+            // Add value-specific questions
+            const valueQuestions = this.getValueSpecificQuestions(coreValues, timeframe);
+            questions = questions.concat(valueQuestions);
+
+            return this.optimizeQuestionSequence(questions);
+        } catch (error) {
+            console.error('[QuestionController] Error generating questions:', error);
+            return [];
+        }
     }
-    
-    const areaQuestions = this.questionBank.get(area);
-    if (!areaQuestions) {
-        console.warn(`[QuestionController] No questions found for area: ${area}`);
-        return [];
-    }   
-    
-    switch (impactLevel) {
-      case ImpactLevel.CRITICAL:
-      case ImpactLevel.HIGH:
-        return areaQuestions;
-      case ImpactLevel.MEDIUM:
-        return areaQuestions.filter(q => q.required);
-      case ImpactLevel.LOW:
-        return areaQuestions.filter(q => q.required).slice(0, 2);
-      case ImpactLevel.NONE:
-      default:
-        console.warn(`[QuestionController] Invalid impact level: ${impactLevel}`);
-        return [];
-    }
-  }
 
-  // src/controllers/QuestionController.ts
-  generateQuestionSequence(
-    impactedAreas: WheelOfLife[],
-    impactLevels: Record<WheelOfLife, ImpactLevel>
-  ): Question[] {
-    if (!impactedAreas || impactedAreas.length === 0 || !impactLevels) {
-        console.warn('[QuestionController] Missing impacted areas or impact levels');
-      return [];
-    }
+    private getQuestionsForArea(
+        area: WheelOfLife,
+        timeframe: TimeFrame,
+        priorityLevel: PriorityLevel,
+        coreValues: string[]
+    ): Question[] {
+        const areaQuestions = this.questionBank.get(area) || [];
 
-    try {
-        let questions: Question[] = [];
+        return areaQuestions.filter(question => {
+            // Match timeframe
+            const timeframeMatch = question.timeframe === timeframe || question.timeframe === TimeFrame.BOTH;
 
-        // Generate questions for each impacted area
-        impactedAreas.forEach((area) => {
-            if (!impactLevels[area]) {
-                console.warn(`[QuestionController] Missing impact level for ${area}, defaulting to HIGH`);
-                impactLevels[area] = ImpactLevel.HIGH;
-            }
+            // Match priority level
+            const priorityMatch = this.isPriorityLevelCompatible(question.priorityLevel, priorityLevel);
 
-            const areaQuestions = this.getQuestionsByImpact(
-                area, 
-                impactLevels[area]
-            );
-            questions = questions.concat(areaQuestions);
+            // Check value alignment
+            const valueAlignment = this.calculateValueAlignment(question, coreValues);
+
+            return timeframeMatch && priorityMatch && valueAlignment > 0.3; // Threshold for value alignment
         });
-
-        return this.optimizeQuestionOrder(questions);
-    } catch (error) {
-        console.error('[QuestionController] Error generating question sequence:', error);
-        return [];
-    }}
-
-  private optimizeQuestionOrder(questions: Question[]): Question[] {
-    if (!questions || questions.length === 0) {
-        return [];
     }
 
-    const typeOrder: Record<string, number> = { 
-        scale: 0, 
-        multiselect: 1, 
-        text: 2, 
-        number: 3 
-    };
-    
-    return questions.sort((a, b) => {
-        // Required questions come first
-        if (a.required && !b.required) return -1;
-        if (!a.required && b.required) return 1;
+    private isPriorityLevelCompatible(
+        questionPriority: PriorityLevel,
+        contextPriority: PriorityLevel
+    ): boolean {
+        const priorityLevels = {
+            [PriorityLevel.HIGH]: 3,
+            [PriorityLevel.MEDIUM]: 2,
+            [PriorityLevel.LOW]: 1
+        };
 
-        // Then sort by question type
-        const aTypeOrder = typeOrder[a.type] ?? 4;
-        const bTypeOrder = typeOrder[b.type] ?? 4;
-        return aTypeOrder - bTypeOrder;
-    });
-    
+        return priorityLevels[questionPriority] <= priorityLevels[contextPriority];
     }
 
+    private calculateValueAlignment(question: Question, userValues: string[]): number {
+        if (!question.valueCategories.length || !userValues.length) return 0;
+
+        const matchingValues = question.valueCategories
+            .filter(category => userValues.includes(category));
+
+        return matchingValues.length / question.valueCategories.length;
+    }
+
+    private getValueSpecificQuestions(
+        values: string[],
+        timeframe: TimeFrame
+    ): Question[] {
+        // Implementation for value-specific questions
+        // This would pull from a separate bank of value-focused questions
+        return [];
+    }
+    private optimizeQuestionSequence(questions: Question[]): Question[] {
+        return questions
+            .sort((a, b) => {
+                // Sort by priority level first
+                if (a.priorityLevel !== b.priorityLevel) {
+                    return this.getPriorityWeight(b.priorityLevel) - this.getPriorityWeight(a.priorityLevel);
+                }
+                // Then by question weight
+                return b.weight - a.weight;
+            })
+            .slice(0, this.getMaxQuestions(questions.length)); // Limit total number of questions
+    }
+
+    private getPriorityWeight(priority: PriorityLevel): number {
+        switch (priority) {
+            case PriorityLevel.HIGH: return 3;
+            case PriorityLevel.MEDIUM: return 2;
+            case PriorityLevel.LOW: return 1;
+            default: return 0;
+        }
+    }
+
+    private getMaxQuestions(totalAvailable: number): number {
+        // Limit questions based on total available to prevent survey fatigue
+        if (totalAvailable <= 10) return totalAvailable;
+        if (totalAvailable <= 20) return Math.ceil(totalAvailable * 0.8);
+        return Math.min(Math.ceil(totalAvailable * 0.6), 25);
+    }
 }

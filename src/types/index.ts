@@ -23,19 +23,45 @@ export enum ImpactLevel {
     HIGH = 'high',
     CRITICAL = 'critical'
 }
+/**
+ * Represents the different types of questions that can be asked
+ */
+export enum QuestionType {
+    SCALE = 'scale',
+    MULTISELECT = 'multiselect',
+    TEXT = 'text'
+}
+  
+export enum PriorityLevel {
+    HIGH = 'high',
+    MEDIUM = 'medium',
+    LOW = 'low'
+}
+  
+export enum TimeFrame {
+    SHORT_TERM = 'short-term',
+    LONG_TERM = 'long-term',
+    BOTH = 'both'
+}
 
 export type MonthlyMetrics = Record<string, number>;
 export type AnnualMetrics = Record<string, number>;
 
-export type QuestionResponse = string | number | string[];
 export type ResponseRecord = Record<string, QuestionResponse>;
 
 // Updated interfaces with more specific types and documentation
+
+
 export interface DecisionContext {
     description: string;
     impactedAreas: WheelOfLife[];
     impactLevels: { [key in WheelOfLife]: ImpactLevel };
     createdAt?: Date; 
+}
+
+export interface UserPriorities {
+    timeframe: 'short-term' | 'long-term';
+    topPriorities: WheelOfLife[];
 }
 
 export interface FinancialMetrics {
@@ -59,7 +85,7 @@ export interface TimeMetrics {
         weekly: number;
         monthly: number;
     };
-    duration: string; // Consider making this an enum or more specific type
+    duration: string; 
 }
 
 export interface ResourceMetrics {
@@ -93,6 +119,51 @@ export interface AnalysisResults {
             suggestions: string[];
         };
     };
+}
+
+export interface QuestionCategory {
+    id: string;
+    name: string;
+    description: string;
+}
+  
+export interface ScaleParams {
+    min: number;
+    max: number;
+    minLabel: string;
+    maxLabel: string;
+    midLabel: string;
+    markers: Array<{
+        value: number;
+        label: string;
+    }>;
+}
+
+export interface Question {
+    id: string;
+    text: string;
+    description: string;
+    type: QuestionType;
+    category: WheelOfLife;
+    subCategory?: string;
+    timeframe: TimeFrame;
+    priorityLevel: PriorityLevel;
+    required: boolean;
+    valueCategories: string[];  // Categories of values this question relates to
+    scaleParams?: ScaleParams;
+    options?: string[];
+    weight: number;  // Base weight for scoring
+}
+
+export interface QuestionResponse {
+    questionId: string;
+    value: string | number | string[];
+    timestamp: Date;
+}
+  
+export interface QuestionSet {
+    category: WheelOfLife;
+    questions: Question[];
 }
 
 // Add validation helpers

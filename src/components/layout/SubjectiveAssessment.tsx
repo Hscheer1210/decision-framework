@@ -1,7 +1,7 @@
 // src/components/Layout/SubjectiveAssessment.tsx
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { SubjectiveMetrics, WheelOfLife } from '../../types';
+import { SubjectiveMetrics, WheelOfLife, TimeFrame, Question, QuestionType } from '../../types';
 import { useDecisionStore } from '../../state/store';
 import { QuestionController } from '../../controllers/QuestionController';
 import { AnalysisService } from '../../services/AnalysisService';
@@ -10,6 +10,8 @@ export const SubjectiveAssessment: React.FC = () => {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<SubjectiveMetrics>();
   const { 
     context, 
+    priorities,
+    coreValues,
     objectiveMetrics,
     setSubjectiveMetrics, 
     setAnalysisResults, 
@@ -27,16 +29,16 @@ export const SubjectiveAssessment: React.FC = () => {
   }, [context, objectiveMetrics]);
 
   const questions = React.useMemo(() => {
-    if (!context) {
+    if (!context || !priorities || !coreValues) {
       console.warn('[SubjectiveAssessment] Cannot generate questions - missing context');
       return [];
     }
 
     try {
       const generatedQuestions = questionController.generateQuestionSequence(
-        context.primaryArea,
-        context.secondaryAreas,
-        context.impactLevels
+        priorities.timeframe as TimeFrame,
+        priorities.topPriorities,
+        coreValues,
       );
       console.log('[SubjectiveAssessment] Questions generated:', generatedQuestions.length);
       return generatedQuestions;
@@ -44,7 +46,7 @@ export const SubjectiveAssessment: React.FC = () => {
       console.error('[SubjectiveAssessment] Error in question generation:', error);
       return [];
     }
-  }, [context]);
+  }, [context, priorities, coreValues]);
 
   const onSubmit = async (data: SubjectiveMetrics) => {
     console.log('[SubjectiveAssessment] Form submitted with data:', data);
@@ -57,13 +59,30 @@ export const SubjectiveAssessment: React.FC = () => {
         return;
       }
 
+        // Add timestamps to responses
+        const timestampedResponses = Object.entries(data.responses).reduce(
+            (acc, [id, response]) => ({
+                ...acc,
+                [id]: {
+                    ...response,
+                    timestamp: new Date()
+                }
+            }),
+            {}
+        );
+
+        const formattedData: SubjectiveMetrics = {
+            ...data,
+            responses: timestampedResponses
+        };
+
       setSubjectiveMetrics(data);
       console.log('[SubjectiveAssessment] Subjective metrics set');
 
       const results = analysisService.generateAnalysis(
         context,
         objectiveMetrics,
-        data
+        formattedData
       );
       
       setAnalysisResults(results);
@@ -155,8 +174,9 @@ export const SubjectiveAssessment: React.FC = () => {
                       min={question.scaleParams.min}
                       max={question.scaleParams.max}
                       step="1"
-                      {...register(`responses.${question.id}`, {
-                        required: question.required
+                      {...register(`responses.${question.id}.value` as const, {
+                        required: question.required,
+                        setValueAs: (v: string) => Number(v)
                       })}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                     />
@@ -178,7 +198,7 @@ export const SubjectiveAssessment: React.FC = () => {
                   </div>
 
                   <div className="text-right text-sm text-gray-500">
-                    Current value: {watch(`responses.${question.id}`) || 5}
+                    Current value: {watch(`responses.${question.id}.value`) || 5}
                   </div>
                 </div>
               )}
@@ -186,7 +206,7 @@ export const SubjectiveAssessment: React.FC = () => {
               {question.type === 'multiselect' && (
                 <select
                   multiple
-                  {...register(`responses.${question.id}`, {
+                  {...register(`responses.${question.id}.value` as const, {
                     required: question.required
                   })}
                   className="w-full px-3 py-2 border rounded-md"
@@ -202,7 +222,7 @@ export const SubjectiveAssessment: React.FC = () => {
               {question.type === 'text' && (
                 <input
                   type="text"
-                  {...register(`responses.${question.id}`, {
+                  {...register(`responses.${question.id}.value` as const, {
                     required: question.required
                   })}
                   className="w-full px-3 py-2 border rounded-md"
