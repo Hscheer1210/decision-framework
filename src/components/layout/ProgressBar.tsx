@@ -101,7 +101,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ steps, currentStep }) 
                     </div>
     
                     {/* Step Label */}
-                    <div className="mt-3 text-center">
+                    <div className="mt-3 text-center text-blue-600">
                       <span className={`
                         text-sm font-medium
                         ${status === 'completed' || status === 'current' ? 'text-blue-600' :
